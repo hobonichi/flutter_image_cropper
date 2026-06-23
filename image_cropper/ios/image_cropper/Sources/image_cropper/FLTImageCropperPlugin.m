@@ -85,6 +85,22 @@
       cropViewController.aspectRatioLockEnabled = YES;
     }
 
+    // Re-apply the initial crop frame AFTER aspectRatioPreset so the caller-provided
+    // imageCropFrame (used to restore a saved crop position) is not overridden by the
+    // preset's default centered crop box.
+    NSNumber *initialRectX = call.arguments[@"ios.rect_x"];
+    NSNumber *initialRectY = call.arguments[@"ios.rect_y"];
+    NSNumber *initialRectWidth = call.arguments[@"ios.rect_width"];
+    NSNumber *initialRectHeight = call.arguments[@"ios.rect_height"];
+    if ([initialRectX isKindOfClass:[NSNumber class]] &&
+        [initialRectY isKindOfClass:[NSNumber class]] &&
+        [initialRectWidth isKindOfClass:[NSNumber class]] &&
+        [initialRectHeight isKindOfClass:[NSNumber class]]) {
+      cropViewController.imageCropFrame =
+          CGRectMake(initialRectX.floatValue, initialRectY.floatValue,
+                     initialRectWidth.floatValue, initialRectHeight.floatValue);
+    }
+
     // Find key window (camera is presented here) and Flutter window (cropper must be presented here).
     // In UISceneDelegate apps (Flutter default on iOS 13+), these are two separate windows:
     // - keyWindow: plain UIViewController root, used by iOS for system presentations like camera
@@ -198,9 +214,14 @@
   NSString *title = options[@"ios.title"];
   NSString *doneButtonTitle = options[@"ios.done_button_title"];
   NSString *cancelButtonTitle = options[@"ios.cancel_button_title"];
+  NSNumber *angle = options[@"ios.angle"];
 
   if (minimumAspectRatio && [minimumAspectRatio isKindOfClass:[NSNumber class]]) {
     controller.minimumAspectRatio = minimumAspectRatio.floatValue;
+  }
+  // Restore the saved rotation angle (degrees) so a previously rotated crop reopens rotated.
+  if (angle && [angle isKindOfClass:[NSNumber class]]) {
+    controller.angle = angle.integerValue;
   }
   if (rectX && [rectX isKindOfClass:[NSNumber class]] && rectY &&
       [rectY isKindOfClass:[NSNumber class]] && rectWidth &&
@@ -319,7 +340,16 @@
 
   if (_result) {
     if ([[NSFileManager defaultManager] createFileAtPath:tmpPath contents:data attributes:nil]) {
-      _result(tmpPath);
+      // Return the crop rectangle (in source-image coordinates) and rotation angle
+      // alongside the path so callers can persist and later restore the crop position.
+      _result(@{
+        @"path" : tmpPath,
+        @"rect_x" : @(cropRect.origin.x),
+        @"rect_y" : @(cropRect.origin.y),
+        @"rect_width" : @(cropRect.size.width),
+        @"rect_height" : @(cropRect.size.height),
+        @"angle" : @(angle),
+      });
     } else {
       _result([FlutterError errorWithCode:@"create_error"
                                   message:@"Temporary file could not be created"

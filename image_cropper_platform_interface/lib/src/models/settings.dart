@@ -293,6 +293,10 @@ class IOSUiSettings extends PlatformUiSettings {
   final double? rectWidth;
   final double? rectHeight;
 
+  /// Initial rotation angle (in degrees) of the crop view. Used to restore a
+  /// previously saved rotation when reopening the cropper.
+  final int? angle;
+
   /// If true, when the user hits 'Done', a UIActivityController will appear
   /// before the view controller ends.
   final bool? showActivitySheetOnDone;
@@ -376,6 +380,7 @@ class IOSUiSettings extends PlatformUiSettings {
     this.rectY,
     this.rectWidth,
     this.rectHeight,
+    this.angle,
     this.showActivitySheetOnDone,
     this.showCancelConfirmationDialog = false,
     this.rotateClockwiseButtonHidden = false,
@@ -407,6 +412,7 @@ class IOSUiSettings extends PlatformUiSettings {
         'ios.rect_y': this.rectY,
         'ios.rect_width': this.rectWidth,
         'ios.rect_height': this.rectHeight,
+        'ios.angle': this.angle,
         'ios.show_activity_sheet_on_done': this.showActivitySheetOnDone,
         'ios.show_cancel_confirmation_dialog':
             this.showCancelConfirmationDialog,

@@ -13,11 +13,17 @@ import './base.dart';
 /// A CroppedFile backed by a dart:io File.
 class CroppedFile extends CroppedFileBase {
   /// Construct a PickedFile object backed by a dart:io File.
-  CroppedFile(String path)
+  CroppedFile(String path, {this.cropRect, this.angle})
       : _file = File(path),
         super(path);
 
   final File _file;
+
+  @override
+  final ({double x, double y, double width, double height})? cropRect;
+
+  @override
+  final int? angle;
 
   @override
   String get path {

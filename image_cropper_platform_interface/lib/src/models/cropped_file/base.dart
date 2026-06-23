@@ -36,6 +36,15 @@ abstract class CroppedFileBase {
     throw UnimplementedError('.path has not been implemented.');
   }
 
+  /// The crop rectangle the user confirmed, in the source image's pixel
+  /// coordinate space. Only provided on platforms that report it back
+  /// (currently iOS); `null` otherwise.
+  ({double x, double y, double width, double height})? get cropRect => null;
+
+  /// The rotation angle (in degrees) applied when cropping. Only provided on
+  /// platforms that report it back (currently iOS); `null` otherwise.
+  int? get angle => null;
+
   /// Synchronously read the entire file contents as a string using the given [Encoding].
   ///
   /// By default, `encoding` is [utf8].
