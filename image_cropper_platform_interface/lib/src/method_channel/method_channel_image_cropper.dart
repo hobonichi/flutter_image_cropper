@@ -72,9 +72,27 @@ class MethodChannelImageCropper extends ImageCropperPlatform {
       }
     }
 
-    final String? resultPath =
-        await _channel.invokeMethod('cropImage', arguments);
-    return resultPath == null ? null : CroppedFile(resultPath);
+    final Object? result = await _channel.invokeMethod('cropImage', arguments);
+    if (result == null) {
+      return null;
+    }
+    // iOS and Android return a map carrying the crop rect and rotation angle
+    // in addition to the path. Other platforms return the path string directly.
+    if (result is Map) {
+      final path = result['path'] as String;
+      final x = (result['rect_x'] as num?)?.toDouble();
+      final y = (result['rect_y'] as num?)?.toDouble();
+      final width = (result['rect_width'] as num?)?.toDouble();
+      final height = (result['rect_height'] as num?)?.toDouble();
+      final hasRect =
+          x != null && y != null && width != null && height != null;
+      return CroppedFile(
+        path,
+        cropRect: hasRect ? (x: x, y: y, width: width, height: height) : null,
+        angle: (result['angle'] as num?)?.toDouble(),
+      );
+    }
+    return CroppedFile(result as String);
   }
 
   ///
