@@ -23,7 +23,7 @@ class CroppedFile extends CroppedFileBase {
     this.path, {
     Uint8List? bytes,
     ({double x, double y, double width, double height})? cropRect,
-    int? angle,
+    double? angle,
   })  : _initBytes = bytes,
         super(path);
 

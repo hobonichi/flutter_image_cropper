@@ -23,7 +23,7 @@ class CroppedFile extends CroppedFileBase {
   final ({double x, double y, double width, double height})? cropRect;
 
   @override
-  final int? angle;
+  final double? angle;
 
   @override
   String get path {

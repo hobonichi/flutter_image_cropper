@@ -16,6 +16,7 @@ import com.yalantis.ucrop.view.CropImageView;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import io.flutter.plugin.common.MethodCall;
@@ -99,7 +100,9 @@ public class ImageCropperDelegate implements PluginRegistry.ActivityResultListen
             cropper.withAspectRatio(ratioX.floatValue(), ratioY.floatValue());
         }
 
-        activity.startActivityForResult(cropper.getIntent(activity), UCrop.REQUEST_CROP);
+        Intent intent = cropper.getIntent(activity);
+        intent.setClass(activity, ImageCropperActivity.class);
+        activity.startActivityForResult(intent, UCrop.REQUEST_CROP);
     }
 
     public void recoverImage(MethodCall call, MethodChannel.Result result) {
@@ -130,7 +133,7 @@ public class ImageCropperDelegate implements PluginRegistry.ActivityResultListen
                 final Uri resultUri = UCrop.getOutput(data);
                 final String imagePath = fileUtils.getPathFromUri(activity, resultUri);
                 cacheImage(imagePath);
-                finishWithSuccess(imagePath);
+                finishWithSuccess(buildResult(imagePath, data));
                 return true;
             } else if (resultCode == UCrop.RESULT_ERROR) {
                 final Throwable cropError = UCrop.getError(data);
@@ -145,9 +148,32 @@ public class ImageCropperDelegate implements PluginRegistry.ActivityResultListen
         return false;
     }
 
-    private void finishWithSuccess(String imagePath) {
+    /**
+     * Returns the path together with the confirmed crop rect and rotation angle.
+     * The rect is in the rotated bitmap's pixel space, matching the iOS result.
+     */
+    private Map<String, Object> buildResult(String imagePath, Intent data) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("path", imagePath);
+        int offsetX = data.getIntExtra(UCrop.EXTRA_OUTPUT_OFFSET_X, -1);
+        int offsetY = data.getIntExtra(UCrop.EXTRA_OUTPUT_OFFSET_Y, -1);
+        int width = UCrop.getOutputImageWidth(data);
+        int height = UCrop.getOutputImageHeight(data);
+        if (offsetX >= 0 && offsetY >= 0 && width > 0 && height > 0) {
+            result.put("rect_x", (double) offsetX);
+            result.put("rect_y", (double) offsetY);
+            result.put("rect_width", (double) width);
+            result.put("rect_height", (double) height);
+        }
+        if (data.hasExtra(ImageCropperActivity.EXTRA_OUTPUT_ANGLE)) {
+            result.put("angle", (double) data.getFloatExtra(ImageCropperActivity.EXTRA_OUTPUT_ANGLE, 0f));
+        }
+        return result;
+    }
+
+    private void finishWithSuccess(Map<String, Object> result) {
         if (pendingResult != null) {
-            pendingResult.success(imagePath);
+            pendingResult.success(result);
             clearMethodCallAndResult();
         }
     }

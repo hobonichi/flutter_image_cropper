@@ -76,8 +76,8 @@ class MethodChannelImageCropper extends ImageCropperPlatform {
     if (result == null) {
       return null;
     }
-    // iOS returns a map carrying the crop rect and rotation angle in addition
-    // to the path. Other platforms return the path string directly.
+    // iOS and Android return a map carrying the crop rect and rotation angle
+    // in addition to the path. Other platforms return the path string directly.
     if (result is Map) {
       final path = result['path'] as String;
       final x = (result['rect_x'] as num?)?.toDouble();
@@ -89,7 +89,7 @@ class MethodChannelImageCropper extends ImageCropperPlatform {
       return CroppedFile(
         path,
         cropRect: hasRect ? (x: x, y: y, width: width, height: height) : null,
-        angle: (result['angle'] as num?)?.toInt(),
+        angle: (result['angle'] as num?)?.toDouble(),
       );
     }
     return CroppedFile(result as String);

@@ -16,7 +16,7 @@ class CroppedFile extends CroppedFileBase {
   CroppedFile(
     String path, {
     ({double x, double y, double width, double height})? cropRect,
-    int? angle,
+    double? angle,
   }) : super(path) {
     throw UnimplementedError(
         'CroppedFile is not available in your current platform.');
