@@ -221,6 +221,9 @@ public class ImageCropperDelegate implements PluginRegistry.ActivityResultListen
         }
         if (backgroundColor != null) {
             options.setRootViewBackgroundColor(backgroundColor);
+            // uCrop draws its logo behind the image. Tint it with the background so it does not
+            // show through when the image is dragged or zoomed out of the crop frame.
+            options.setLogoColor(backgroundColor);
         }
         if (activeControlsWidgetColor != null) {
             options.setActiveControlsWidgetColor(activeControlsWidgetColor);
